@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>💧 飲水打卡追蹤器</title>
+    <style>
+        :root {
+            --color-bg-base: #0f172a;
+            --color-bg-elevated: #020617;
+            --color-bg-surface: #1e293b;
+            --color-bg-muted: #334155;
+            --color-text-primary: #f1f5f9;
+            --color-text-secondary: #cbd5e1;
+            --color-text-muted: #94a3b8;
+            --color-text-accent: #38bdf8;
+            --color-primary: #38bdf8;
+            --color-success: #10b981;
+            --color-warning: #f59e0b;
+            --color-error: #ef4444;
+            --font-family-base: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang TC', 'Microsoft JhengHei', sans-serif;
+            --radius-base: 8px;
+            --radius-lg: 12px;
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+        }
+
+        @media (prefers-color-scheme: light) {
+            :root {
+                --color-bg-base: #ffffff;
+                --color-bg-elevated: #f8fafc;
+                --color-bg-surface: #f1f5f9;
+                --color-bg-muted: #e2e8f0;
+                --color-text-primary: #0f172a;
+                --color-text-secondary: #475569;
+                --color-text-muted: #64748b;
+                --color-text-accent: #0284c7;
+                --color-primary: #0284c7;
+            }
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-family-base);
+            background-color: var(--color-bg-base);
+            color: var(--color-text-primary);
+            line-height: 1.6;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: var(--color-primary);
+            margin-bottom: 8px;
+            font-size: 28px;
+            text-align: center;
+        }
+
+        .date-info {
+            color: var(--color-text-muted);
+            margin-bottom: 24px;
+            font-size: 14px;
+            text-align: center;
+        }
+
+        .progress-card {
+            background: var(--color-bg-surface);
+            padding: 24px;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-md);
+            margin-bottom: 24px;
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .current-amount {
+            font-size: 48px;
+            font-weight: 700;
+            color: var(--color-primary);
+        }
+
+        .target-amount {
+            font-size: 18px;
+            color: var(--color-text-muted);
+            margin-left: 8px;
+        }
+
+        .progress-bar-container {
+            background: var(--color-bg-muted);
+            height: 20px;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 12px;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #38bdf8, #10b981);
+            transition: width 0.5s ease;
+            border-radius: 10px;
+        }
+
+        .progress-text {
+            font-size: 14px;
+            color: var(--color-text-secondary);
+            text-align: center;
+        }
+
+        .cup-info {
+            background: var(--color-bg-elevated);
+            padding: 16px;
+            border-radius: var(--radius-base);
+            margin-bottom: 24px;
+            border-left: 4px solid var(--color-primary);
+        }
+
+        .cup-info-title {
+            font-size: 14px;
+            color: var(--color-text-muted);
+            margin-bottom: 4px;
+        }
+
+        .cup-info-value {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--color-primary);
+        }
+
+        .button-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .btn {
+            background: var(--color-primary);
+            color: var(--color-text-primary);
+            border: none;
+            padding: 16px 24px;
+            border-radius: var(--radius-base);
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px -2px rgba(0, 0, 0, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-secondary {
+            background: var(--color-bg-surface);
+            color: var(--color-text-secondary);
+        }
+
+        .history-section {
+            background: var(--color-bg-surface);
+            padding: 20px;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-md);
+        }
+
+        .history-header {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--color-text-accent);
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--color-bg-muted);
+        }
+
+        .history-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            margin-bottom: 8px;
+            background: var(--color-bg-elevated);
+            border-radius: var(--radius-base);
+        }
+
+        .history-time {
+            font-size: 14px;
+            color: var(--color-text-muted);
+        }
+
+        .history-amount {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--color-success);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--color-text-muted);
+        }
+
+        .status-message {
+            background: var(--color-bg-elevated);
+            padding: 16px;
+            border-radius: var(--radius-base);
+            margin-bottom: 16px;
+            border-left: 4px solid var(--color-success);
+            font-size: 14px;
+            color: var(--color-text-secondary);
+        }
+
+        .status-message.warning {
+            border-left-color: var(--color-warning);
+        }
+
+        .recommendation-section {
+            background: var(--color-bg-surface);
+            padding: 20px;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-md);
+            margin-bottom: 24px;
+        }
+
+        .recommendation-header {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--color-text-accent);
+            margin-bottom: 12px;
+        }
+
+        .recommendation-card {
+            background: var(--color-bg-elevated);
+            padding: 16px;
+            border-radius: var(--radius-base);
+            margin-bottom: 20px;
+        }
+
+        .recommendation-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+        }
+
+        .recommendation-label {
+            font-size: 14px;
+            color: var(--color-text-secondary);
+        }
+
+        .recommendation-value {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--color-primary);
+        }
+
+        .schedule-header {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--color-text-accent);
+            margin: 20px 0 12px 0;
+        }
+
+        .schedule-list {
+            background: var(--color-bg-elevated);
+            border-radius: var(--radius-base);
+            padding: 12px;
+            margin-bottom: 16px;
+        }
+
+        .schedule-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 12px;
+            margin-bottom: 8px;
+            background: var(--color-bg-surface);
+            border-radius: 6px;
+            border-left: 3px solid var(--color-primary);
+        }
+
+        .schedule-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .schedule-time {
+            font-size: 14px;
+            color: var(--color-text-primary);
+            font-weight: 500;
+        }
+
+        .schedule-amount {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--color-success);
+        }
+
+        .tips-box {
+            background: var(--color-bg-elevated);
+            padding: 16px;
+            border-radius: var(--radius-base);
+            border-left: 4px solid var(--color-warning);
+            font-size: 14px;
+            color: var(--color-text-secondary);
+            line-height: 1.8;
+        }
+
+        .tips-box ul {
+            margin: 8px 0 0 20px;
+            padding: 0;
+        }
+
+        .tips-box li {
+            margin-bottom: 6px;
+        }
+
+        @media (max-width: 640px) {
+            .button-group {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>💧 飲水打卡追蹤器</h1>
+        <div class="date-info">Monday, February 23, 2026 | 12:45 PM</div>
+
+        <div class="progress-card">
+            <div class="progress-header">
+                <div>
+                    <span class="current-amount" id="currentAmount">0</span>
+                    <span class="target-amount">/ 2000 ml</span>
+                </div>
+            </div>
+            <div class="progress-bar-container">
+                <div class="progress-bar" id="progressBar" style="width: 0%"></div>
+            </div>
+            <div class="progress-text" id="progressText">未開始飲水</div>
+        </div>
+
+        <div class="cup-info">
+            <div class="cup-info-title">你的保溫杯容量</div>
+            <div class="cup-info-value">360 ml / 杯</div>
+        </div>
+
+        <div class="recommendation-section">
+            <div class="recommendation-header">💡 今日飲水建議</div>
+            <div class="recommendation-card">
+                <div class="recommendation-row">
+                    <div class="recommendation-label">每日建議總量</div>
+                    <div class="recommendation-value">2000 ml (約 6 杯)</div>
+                </div>
+                <div class="recommendation-row">
+                    <div class="recommendation-label">你的保溫杯</div>
+                    <div class="recommendation-value">360 ml × 6 杯 = 2160 ml</div>
+                </div>
+            </div>
+            
+            <div class="schedule-header">⏰ 建議飲水時間表</div>
+            <div class="schedule-list">
+                <div class="schedule-item">
+                    <div class="schedule-time">01:00 PM - 02:00 PM</div>
+                    <div class="schedule-amount">1 杯 (360ml)</div>
+                </div>
+                <div class="schedule-item">
+                    <div class="schedule-time">02:30 PM - 03:30 PM</div>
+                    <div class="schedule-amount">1 杯 (360ml)</div>
+                </div>
+                <div class="schedule-item">
+                    <div class="schedule-time">04:00 PM - 05:00 PM</div>
+                    <div class="schedule-amount">1 杯 (360ml)</div>
+                </div>
+                <div class="schedule-item">
+                    <div class="schedule-time">05:30 PM - 06:30 PM</div>
+                    <div class="schedule-amount">半杯 (180ml)</div>
+                </div>
+                <div class="schedule-item">
+                    <div class="schedule-time">晚餐前 15 分鐘</div>
+                    <div class="schedule-amount">半杯 (180ml)</div>
+                </div>
+                <div class="schedule-item">
+                    <div class="schedule-time">晚餐後 1 小時</div>
+                    <div class="schedule-amount">1 杯 (360ml)</div>
+                </div>
+            </div>
+            
+            <div class="tips-box">
+                <strong>💧 針對你的情況：</strong>
+                <ul>
+                    <li>你今早 9am 至今只飲少過 1 杯水，需要追返進度</li>
+                    <li>PMS 胸痛期間多飲水有助減輕水腫與脹痛</li>
+                    <li>Ozempic 用藥期更需要足夠水分預防便秘</li>
+                    <li>尿酸邊緣水平需要每日 2L+ 水幫助排泄</li>
+                    <li>晚餐前飲水可幫助分清「口渴」與「肚餓」</li>
+                </ul>
+            </div>
+        </div>
+
+        <div id="statusMessage"></div>
+
+        <div class="button-group">
+            <button class="btn" onclick="addWater(360)">
+                <span style="font-size: 20px;">💧</span><br>
+                飲咗 1 杯 (360ml)
+            </button>
+            <button class="btn" onclick="addWater(180)">
+                <span style="font-size: 20px;">🥤</span><br>
+                飲咗半杯 (180ml)
+            </button>
+            <button class="btn btn-secondary" onclick="addCustomWater()">
+                <span style="font-size: 20px;">✏️</span><br>
+                自訂份量
+            </button>
+            <button class="btn btn-secondary" onclick="resetWater()">
+                <span style="font-size: 20px;">🔄</span><br>
+                重設記錄
+            </button>
+        </div>
+
+        <div class="history-section">
+            <div class="history-header">📋 今日飲水記錄</div>
+            <div id="historyList" class="empty-state">
+                暫時未有記錄。立即開始打卡！
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const DAILY_TARGET = 2000;
+        const CUP_SIZE = 360;
+        let totalWater = 0;
+        let waterHistory = [];
+
+        function getCurrentTime() {
+            const now = new Date();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            return `${hours}:${minutes}`;
+        }
+
+        function addWater(amount) {
+            totalWater += amount;
+            const timestamp = getCurrentTime();
+            waterHistory.push({ time: timestamp, amount: amount });
+            
+            updateDisplay();
+            showStatusMessage(amount);
+            
+            // 滾動到狀態訊息位置
+            setTimeout(() => {
+                document.getElementById('statusMessage').scrollIntoView({ 
+                    behavior: 'smooth', 
+                    block: 'center' 
+                });
+            }, 100);
+        }
+
+        function addCustomWater() {
+            const amount = prompt('請輸入飲咗幾多 ml：', '');
+            if (amount !== null && amount !== '') {
+                const waterAmount = parseInt(amount);
+                if (!isNaN(waterAmount) && waterAmount > 0 && waterAmount <= 1000) {
+                    addWater(waterAmount);
+                } else {
+                    alert('請輸入有效數字 (1-1000ml)');
+                }
+            }
+        }
+
+        function resetWater() {
+            if (confirm('確定要重設今日所有飲水記錄？')) {
+                totalWater = 0;
+                waterHistory = [];
+                updateDisplay();
+                document.getElementById('statusMessage').innerHTML = '';
+            }
+        }
+
+        function updateDisplay() {
+            const percentage = Math.min((totalWater / DAILY_TARGET) * 100, 100);
+            const remaining = Math.max(DAILY_TARGET - totalWater, 0);
+            const cupsNeeded = Math.ceil(remaining / CUP_SIZE);
+
+            document.getElementById('currentAmount').textContent = totalWater;
+            document.getElementById('progressBar').style.width = percentage + '%';
+
+            if (totalWater === 0) {
+                document.getElementById('progressText').textContent = '未開始飲水';
+            } else if (totalWater >= DAILY_TARGET) {
+                document.getElementById('progressText').textContent = '🎉 完成今日目標！做得好！';
+            } else {
+                document.getElementById('progressText').textContent = 
+                    `仲差 ${remaining} ml (約 ${cupsNeeded} 杯) 就達標`;
+            }
+
+            updateHistory();
+        }
+
+        function updateHistory() {
+            const historyList = document.getElementById('historyList');
+            
+            if (waterHistory.length === 0) {
+                historyList.innerHTML = '<div class="empty-state">暫時未有記錄。立即開始打卡！</div>';
+                return;
+            }
+
+            let html = '';
+            for (let i = waterHistory.length - 1; i >= 0; i--) {
+                const record = waterHistory[i];
+                html += `
+                    <div class="history-item">
+                        <div class="history-time">🕐 ${record.time}</div>
+                        <div class="history-amount">+${record.amount} ml</div>
+                    </div>
+                `;
+            }
+            historyList.innerHTML = html;
+        }
+
+        function showStatusMessage(amount) {
+            const messageDiv = document.getElementById('statusMessage');
+            const remaining = DAILY_TARGET - totalWater;
+            const percentage = Math.round((totalWater / DAILY_TARGET) * 100);
+            
+            let message = '';
+            let messageClass = 'status-message';
+            
+            // 檢查飲水速度（如果記錄多於1次）
+            let speedWarning = '';
+            if (waterHistory.length >= 2) {
+                const lastRecord = waterHistory[waterHistory.length - 1];
+                const secondLastRecord = waterHistory[waterHistory.length - 2];
+                const timeDiff = getTimeDifferenceInMinutes(secondLastRecord.time, lastRecord.time);
+                
+                if (timeDiff < 15) {
+                    speedWarning = '<br>⚠️ 飲得太急喇！建議每次相隔至少 15-30 分鐘，畀身體慢慢吸收。';
+                } else if (timeDiff > 120) {
+                    speedWarning = '<br>⏰ 距離上次飲水已經超過 2 小時，記得定時補水！';
+                }
+            }
+            
+            // 檢查單次飲水量
+            let amountFeedback = '';
+            if (amount > 500) {
+                amountFeedback = '<br>💧 一次飲太多可能會增加胃部負擔，建議分開幾次慢慢飲。';
+            } else if (amount >= 300 && amount <= 400) {
+                amountFeedback = '<br>👍 呢個份量啱啱好，身體容易吸收！';
+            }
+            
+            // 根據總進度給予建議
+            if (totalWater >= DAILY_TARGET) {
+                message = `
+                    <strong>✅ 完成今日目標！</strong><br>
+                    你已經飲夠 2000 ml 水，對緩解 PMS 胸痛、預防尿酸升高同支援 Ozempic 減重都非常有幫助！
+                    ${speedWarning}
+                `;
+            } else if (totalWater >= DAILY_TARGET * 0.75) {
+                message = `
+                    <strong>💪 做得好！快完成喇！</strong><br>
+                    已完成 ${percentage}%，仲差 ${remaining} ml (約 ${Math.ceil(remaining / CUP_SIZE)} 杯) 就達標。
+                    ${amountFeedback}
+                    ${speedWarning}
+                `;
+            } else if (totalWater >= DAILY_TARGET * 0.5) {
+                message = `
+                    <strong>👏 過半喇！繼續加油！</strong><br>
+                    已完成 ${percentage}%，仲差 ${remaining} ml。建議晚餐前再飲 ${Math.ceil(remaining / CUP_SIZE)} 杯。
+                    ${amountFeedback}
+                    ${speedWarning}
+                `;
+            } else if (totalWater >= DAILY_TARGET * 0.25) {
+                messageClass = 'status-message warning';
+                message = `
+                    <strong>⚠️ 進度有啲慢，要加把勁喇！</strong><br>
+                    你而家只完成 ${percentage}%，仲差 ${remaining} ml。建議每 1 小時飲一次，追返進度。
+                    ${amountFeedback}
+                    ${speedWarning}
+                `;
+            } else {
+                messageClass = 'status-message warning';
+                message = `
+                    <strong>⚠️ 嚴重缺水！立即補水</strong><br>
+                    你今日只飲咗 ${totalWater} ml (${percentage}%)，仲差 ${remaining} ml。你今早 9am 至今只飲少過 1 杯水，需要盡快追返進度！建議每 45-60 分鐘飲一次。
+                    ${speedWarning}
+                `;
+            }
+            
+            messageDiv.innerHTML = `<div class="${messageClass}">${message}</div>`;
+        }
+        
+        function getTimeDifferenceInMinutes(time1, time2) {
+            const [h1, m1] = time1.split(':').map(Number);
+            const [h2, m2] = time2.split(':').map(Number);
+            const minutes1 = h1 * 60 + m1;
+            const minutes2 = h2 * 60 + m2;
+            return Math.abs(minutes2 - minutes1);
+        }
+
+        updateDisplay();
+    </script>
+</body>
+</html>
+
